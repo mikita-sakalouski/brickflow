@@ -188,20 +188,6 @@ def condition_task_test2() -> Any:
     )
 
 
-@wf.task(task_type=TaskType.SPARK_PYTHON_TASK, for_each_task="sample_for_each_task")
-def inner_function():
-    return SparkPythonTask(
-        python_file="./products/test-project/spark/python/src/run_task.py",
-        source="GIT",
-        parameters=["--param1", "World!"],
-    )
-
-
-@wf.for_each_task(depends_on=sample_sql_task_query)
-def sample_for_each_task():
-    return ForEachTask(inputs=json.dumps(["a", "b"]))
-
-
 @wf.spark_python_task(
     libraries=[PypiTaskLibrary(package="koheesio")],
     depends_on=[spark_python_task_a, condition_task_test2],
@@ -226,6 +212,19 @@ def spark_python_task_depended2():
         source="GIT",
         parameters=["--param1", "World!"],
     )  # type: ignore
+
+@wf.task(task_type=TaskType.SPARK_PYTHON_TASK, for_each_task="sample_for_each_task")
+def inner_function():
+    return SparkPythonTask(
+        python_file="./products/test-project/spark/python/src/run_task.py",
+        source="GIT",
+        parameters=["--param1", "World!"],
+    )
+
+
+@wf.for_each_task(depends_on=sample_sql_task_query)
+def sample_for_each_task():
+    return ForEachTask(inputs=json.dumps(["a", "b"]))
 
 
 @wf.dlt_task
