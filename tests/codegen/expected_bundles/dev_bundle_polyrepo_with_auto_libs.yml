@@ -261,6 +261,40 @@ targets:
               "retry_on_timeout": null
               "task_key": "run_job_task_b"
               "timeout_seconds": null
+            - depends_on:
+              - outcome: null
+                task_key: sample_sql_task_query
+              email_notifications: {}
+              for_each_task:
+                inputs: "[\"a\", \"b\"]"
+                task:
+                  email_notifications:
+                    no_alert_for_skipped_runs: null
+                    on_duration_warning_threshold_exceeded: null
+                    on_failure: null
+                    on_start: null
+                    on_success: null
+                  existing_cluster_id: existing_cluster_id
+                  libraries:
+                  - cran: null
+                    egg: null
+                    jar: null
+                    maven: null
+                    pypi:
+                      package: brickflows==0.1.0
+                      repo: null
+                    requirements: null
+                    whl: null
+                  spark_python_task:
+                    parameters: ["--param1", "World!", "all_tasks1", "test", "all_tasks3", "123"]
+                    python_file: ./products/test-project/spark/python/src/run_task.py
+                    source: GIT
+                  task_key: inner_function
+              max_retries: null
+              min_retry_interval_millis: null
+              retry_on_timeout: null
+              task_key: sample_for_each_task
+              timeout_seconds: null
             - depends_on: []
               email_notifications: {}
               existing_cluster_id: existing_cluster_id

@@ -323,10 +323,7 @@ class TestBundleCodegen(TestCase):
 
         actual = read_yaml_file(BUNDLE_FILE_NAME)
         expected = get_expected_bundle_yaml("dev_bundle_polyrepo_with_auto_libs.yml")
-        import json
 
-        print(json.dumps(actual, indent=2))
-        print(json.dumps(expected, indent=2))
         assert_equal_dicts(actual, expected)
         if os.path.exists(BUNDLE_FILE_NAME):
             os.remove(BUNDLE_FILE_NAME)
