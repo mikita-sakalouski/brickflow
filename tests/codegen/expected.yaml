@@ -17,6 +17,9 @@
           "max_concurrent_runs": 1.0
           "name": "test_user_test"
           "notification_settings": null
+          "parameters":
+          - "default": "value1"
+            "name": "wf_param1"
           "permissions":
           - "level": "IS_OWNER"
             "user_name": "abc@abc.com"
@@ -36,13 +39,12 @@
             "brickflow_deployment_mode": "Databricks Asset Bundles"
             "brickflow_project_name": "test-project"
             "brickflow_version": "1.0.0"
-            "deployed_by": "test_user"
             "deployed_at": "1704067200000"
+            "deployed_by": "test_user"
             "environment": "local"
             "tag1": "value1"
             "tag2": "value2"
             "test": "test2"
-          "parameters": [{"name": "wf_param1", "default": "value1"}]
           "tasks":
           - "condition_task":
               "left": "1"

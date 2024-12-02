@@ -282,6 +282,7 @@ from brickflow.engine.task import (
     RunJobTask,
     SqlTask,
     IfElseConditionTask,
+    ForEachTask
 )
 from brickflow.engine.compute import Cluster, Runtimes
 from brickflow.engine.project import Project
@@ -331,6 +332,7 @@ __all__: List[str] = [
     "Cluster",
     "Runtimes",
     "IfElseConditionTask",
+    "ForEachTask",
     "Project",
     "SqlTask",
     "_ilog",

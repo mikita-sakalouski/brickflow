@@ -4,25 +4,29 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel, Field, Json, constr
 from typing_extensions import Literal
 
 
-class Files(BaseModel):
+class BrickflowBundleModel(BaseModel):
     class Config:
         extra = "forbid"
         protected_namespaces = ()
 
+    def as_dict(self) -> dict:
+        return self.model_dump()
+
+
+class TaskBrickflowBundleModel(BrickflowBundleModel): ...
+
+
+class Files(BrickflowBundleModel):
     source: str
 
 
-class Artifacts(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Artifacts(BrickflowBundleModel):
     build: Optional[str] = None
     executable: Optional[str] = None
     files: Optional[List[Files]] = None
@@ -30,11 +34,7 @@ class Artifacts(BaseModel):
     type: str
 
 
-class DeploymentLock(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class DeploymentLock(BrickflowBundleModel):
     enabled: Optional[
         Union[
             bool,
@@ -53,11 +53,7 @@ class DeploymentLock(BaseModel):
     ] = None
 
 
-class Deployment(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Deployment(BrickflowBundleModel):
     fail_on_active_runs: Optional[
         Union[
             bool,
@@ -69,20 +65,12 @@ class Deployment(BaseModel):
     lock: DeploymentLock
 
 
-class Git(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Git(BrickflowBundleModel):
     branch: Optional[str] = None
     origin_url: Optional[str] = None
 
 
-class Bundle(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Bundle(BrickflowBundleModel):
     compute_id: Optional[str] = None
     databricks_cli_version: Optional[str] = None
     deployment: Optional[Deployment] = None
@@ -90,11 +78,7 @@ class Bundle(BaseModel):
     name: str
 
 
-class Experimental(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Experimental(BrickflowBundleModel):
     python_wheel_wrapper: Optional[
         Union[
             bool,
@@ -114,42 +98,26 @@ class Experimental(BaseModel):
     ] = None
 
 
-class Permissions(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Permissions(BrickflowBundleModel):
     group_name: Optional[str] = None
     level: str
     service_principal_name: Optional[str] = None
     user_name: Optional[str] = None
 
 
-class ExperimentsPermissions(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ExperimentsPermissions(BrickflowBundleModel):
     group_name: Optional[str] = None
     level: str
     service_principal_name: Optional[str] = None
     user_name: Optional[str] = None
 
 
-class ExperimentsTags(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ExperimentsTags(BrickflowBundleModel):
     key: Optional[str] = Field(None, description="The tag key.")
     value: Optional[str] = Field(None, description="The tag value.")
 
 
-class Experiments(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Experiments(BrickflowBundleModel):
     artifact_location: Optional[str] = Field(
         None, description="Location where artifacts for the experiment are stored."
     )
@@ -185,22 +153,14 @@ class Experiments(BaseModel):
     )
 
 
-class JobsContinuous(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsContinuous(BrickflowBundleModel):
     pause_status: Optional[str] = Field(
         None,
         description="Indicate whether the continuous execution of the job is paused or not. Defaults to UNPAUSED.",
     )
 
 
-class JobsDeployment(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsDeployment(BrickflowBundleModel):
     kind: str = Field(
         ...,
         description="The kind of deployment that manages the job.\n\n* `BUNDLE`: The job is managed by Databricks Asset Bundle.",
@@ -210,11 +170,7 @@ class JobsDeployment(BaseModel):
     )
 
 
-class JobsEmailNotifications(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsEmailNotifications(BrickflowBundleModel):
     no_alert_for_skipped_runs: Optional[
         Union[
             bool,
@@ -244,11 +200,7 @@ class JobsEmailNotifications(BaseModel):
     )
 
 
-class JobsSpec(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsSpec(BrickflowBundleModel):
     client: str = Field(
         ...,
         description="Client version used by the environment\nThe client is the user-facing environment of the runtime.\nEach client comes with a specific set of pre-installed libraries.\nThe version is a string, consisting of the major client version.",
@@ -259,33 +211,14 @@ class JobsSpec(BaseModel):
     )
 
 
-class Jobs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
-    environment_key: str = Field(
-        ..., description="The key of an environment. It has to be unique within a job."
-    )
-    spec: Optional[JobsSpec] = None
-
-
-class JobsGitSourceGitSnapshot(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsGitSourceGitSnapshot(BrickflowBundleModel):
     used_commit: Optional[str] = Field(
         None,
         description="Commit that was used to execute the run. If git_branch was specified, this points to the HEAD of the branch at the time of the run; if git_tag was specified, this points to the commit the tag points to.",
     )
 
 
-class JobsGitSourceJobSource(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsGitSourceJobSource(BrickflowBundleModel):
     dirty_state: Optional[str] = Field(
         None,
         description="Dirty state indicates the job is not fully synced with the job specification in the remote repository.\n\nPossible values are:\n* `NOT_SYNCED`: The job is not yet synced with the remote job specification. Import the remote job specification from UI to make the job fully synced.\n* `DISCONNECTED`: The job is temporary disconnected from the remote job specification and is allowed for live edit. Import the remote job specification again from UI to make the job fully synced.",
@@ -299,11 +232,7 @@ class JobsGitSourceJobSource(BaseModel):
     )
 
 
-class JobsGitSource(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsGitSource(BrickflowBundleModel):
     git_branch: Optional[str] = Field(
         None,
         description="Name of the branch to be checked out and used by this job. This field cannot be specified in conjunction with git_tag or git_commit.",
@@ -327,11 +256,7 @@ class JobsGitSource(BaseModel):
     job_source: Optional[JobsGitSourceJobSource] = None
 
 
-class JobsHealthRules(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsHealthRules(BrickflowBundleModel):
     metric: str
     op: str
     value: Union[
@@ -345,19 +270,11 @@ class JobsHealthRules(BaseModel):
     )
 
 
-class JobsHealth(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsHealth(BrickflowBundleModel):
     rules: Optional[List[JobsHealthRules]] = None
 
 
-class JobsJobClustersNewClusterAutoscale(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterAutoscale(BrickflowBundleModel):
     max_workers: Optional[
         Union[
             float,
@@ -382,11 +299,7 @@ class JobsJobClustersNewClusterAutoscale(BaseModel):
     )
 
 
-class JobsJobClustersNewClusterAwsAttributes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterAwsAttributes(BrickflowBundleModel):
     availability: Optional[str] = None
     ebs_volume_count: Optional[
         Union[
@@ -465,11 +378,7 @@ class JobsJobClustersNewClusterAwsAttributes(BaseModel):
     )
 
 
-class JobsJobClustersNewClusterAzureAttributesLogAnalyticsInfo(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterAzureAttributesLogAnalyticsInfo(BrickflowBundleModel):
     log_analytics_primary_key: Optional[str] = Field(
         None, description="<needs content added>"
     )
@@ -478,11 +387,7 @@ class JobsJobClustersNewClusterAzureAttributesLogAnalyticsInfo(BaseModel):
     )
 
 
-class JobsJobClustersNewClusterAzureAttributes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterAzureAttributes(BrickflowBundleModel):
     availability: Optional[str] = None
     first_on_demand: Optional[
         Union[
@@ -511,19 +416,11 @@ class JobsJobClustersNewClusterAzureAttributes(BaseModel):
     )
 
 
-class JobsJobClustersNewClusterClusterLogConfDbfs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterClusterLogConfDbfs(BrickflowBundleModel):
     destination: str = Field(..., description="dbfs destination, e.g. `dbfs:/my/path`")
 
 
-class JobsJobClustersNewClusterClusterLogConfS(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterClusterLogConfS(BrickflowBundleModel):
     canned_acl: Optional[str] = Field(
         None,
         description="(Optional) Set canned access control list for the logs, e.g. `bucket-owner-full-control`.\nIf `canned_cal` is set, please make sure the cluster iam role has `s3:PutObjectAcl` permission on\nthe destination bucket and prefix. The full list of possible canned acl can be found at\nhttp://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl.\nPlease also note that by default only the object owner gets full controls. If you are using cross account\nrole for writing data, you may want to set `bucket-owner-full-control` to make bucket owner able to\nread the logs.",
@@ -561,38 +458,22 @@ class JobsJobClustersNewClusterClusterLogConfS(BaseModel):
     )
 
 
-class JobsJobClustersNewClusterClusterLogConf(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterClusterLogConf(BrickflowBundleModel):
     dbfs: Optional[JobsJobClustersNewClusterClusterLogConfDbfs] = None
     s3: Optional[JobsJobClustersNewClusterClusterLogConfS] = None
 
 
-class JobsJobClustersNewClusterDockerImageBasicAuth(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterDockerImageBasicAuth(BrickflowBundleModel):
     password: Optional[str] = Field(None, description="Password of the user")
     username: Optional[str] = Field(None, description="Name of the user")
 
 
-class JobsJobClustersNewClusterDockerImage(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterDockerImage(BrickflowBundleModel):
     basic_auth: Optional[JobsJobClustersNewClusterDockerImageBasicAuth] = None
     url: Optional[str] = Field(None, description="URL of the docker image.")
 
 
-class JobsJobClustersNewClusterGcpAttributes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterGcpAttributes(BrickflowBundleModel):
     availability: Optional[str] = None
     boot_disk_size: Optional[
         Union[
@@ -634,50 +515,30 @@ class JobsJobClustersNewClusterGcpAttributes(BaseModel):
     )
 
 
-class JobsJobClustersNewClusterInitScriptsAbfss(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterInitScriptsAbfss(BrickflowBundleModel):
     destination: str = Field(
         ...,
         description="abfss destination, e.g. `abfss://<container-name>@<storage-account-name>.dfs.core.windows.net/<directory-name>`.",
     )
 
 
-class JobsJobClustersNewClusterInitScriptsDbfs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterInitScriptsDbfs(BrickflowBundleModel):
     destination: str = Field(..., description="dbfs destination, e.g. `dbfs:/my/path`")
 
 
-class JobsJobClustersNewClusterInitScriptsFile(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterInitScriptsFile(BrickflowBundleModel):
     destination: str = Field(
         ..., description="local file destination, e.g. `file:/my/local/file.sh`"
     )
 
 
-class JobsJobClustersNewClusterInitScriptsGcs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterInitScriptsGcs(BrickflowBundleModel):
     destination: str = Field(
         ..., description="GCS destination/URI, e.g. `gs://my-bucket/some-prefix`"
     )
 
 
-class JobsJobClustersNewClusterInitScriptsS(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterInitScriptsS(BrickflowBundleModel):
     canned_acl: Optional[str] = Field(
         None,
         description="(Optional) Set canned access control list for the logs, e.g. `bucket-owner-full-control`.\nIf `canned_cal` is set, please make sure the cluster iam role has `s3:PutObjectAcl` permission on\nthe destination bucket and prefix. The full list of possible canned acl can be found at\nhttp://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl.\nPlease also note that by default only the object owner gets full controls. If you are using cross account\nrole for writing data, you may want to set `bucket-owner-full-control` to make bucket owner able to\nread the logs.",
@@ -715,33 +576,21 @@ class JobsJobClustersNewClusterInitScriptsS(BaseModel):
     )
 
 
-class JobsJobClustersNewClusterInitScriptsVolumes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterInitScriptsVolumes(BrickflowBundleModel):
     destination: str = Field(
         ...,
         description="Unity Catalog Volumes file destination, e.g. `/Volumes/my-init.sh`",
     )
 
 
-class JobsJobClustersNewClusterInitScriptsWorkspace(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterInitScriptsWorkspace(BrickflowBundleModel):
     destination: str = Field(
         ...,
         description="workspace files destination, e.g. `/Users/user1@databricks.com/my-init.sh`",
     )
 
 
-class JobsJobClustersNewClusterInitScripts(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterInitScripts(BrickflowBundleModel):
     abfss: Optional[JobsJobClustersNewClusterInitScriptsAbfss] = None
     dbfs: Optional[JobsJobClustersNewClusterInitScriptsDbfs] = None
     file: Optional[JobsJobClustersNewClusterInitScriptsFile] = None
@@ -751,11 +600,7 @@ class JobsJobClustersNewClusterInitScripts(BaseModel):
     workspace: Optional[JobsJobClustersNewClusterInitScriptsWorkspace] = None
 
 
-class JobsJobClustersNewClusterWorkloadTypeClients(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterWorkloadTypeClients(BrickflowBundleModel):
     jobs: Optional[
         Union[
             bool,
@@ -776,19 +621,11 @@ class JobsJobClustersNewClusterWorkloadTypeClients(BaseModel):
     )
 
 
-class JobsJobClustersNewClusterWorkloadType(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewClusterWorkloadType(BrickflowBundleModel):
     clients: JobsJobClustersNewClusterWorkloadTypeClients
 
 
-class JobsJobClustersNewCluster(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClustersNewCluster(BrickflowBundleModel):
     apply_policy_default_values: Optional[
         Union[
             bool,
@@ -907,11 +744,7 @@ class JobsJobClustersNewCluster(BaseModel):
     workload_type: Optional[JobsJobClustersNewClusterWorkloadType] = None
 
 
-class JobsJobClusters(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsJobClusters(BrickflowBundleModel):
     job_cluster_key: str = Field(
         ...,
         description="A unique name for the job cluster. This field is required and must be unique within the job.\n`JobTaskSettings` may refer to this field to determine which cluster to launch for the task execution.",
@@ -919,11 +752,7 @@ class JobsJobClusters(BaseModel):
     new_cluster: JobsJobClustersNewCluster
 
 
-class JobsNotificationSettings(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsNotificationSettings(BrickflowBundleModel):
     no_alert_for_canceled_runs: Optional[
         Union[
             bool,
@@ -948,11 +777,7 @@ class JobsNotificationSettings(BaseModel):
     )
 
 
-class JobsParameters(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsParameters(BrickflowBundleModel):
     default: str = Field(..., description="Default value of the parameter.")
     name: str = Field(
         ...,
@@ -960,22 +785,14 @@ class JobsParameters(BaseModel):
     )
 
 
-class JobsPermissions(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsPermissions(BrickflowBundleModel):
     group_name: Optional[str] = None
     level: str
     service_principal_name: Optional[str] = None
     user_name: Optional[str] = None
 
 
-class JobsQueue(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsQueue(BrickflowBundleModel):
     enabled: Union[
         bool,
         constr(
@@ -987,11 +804,7 @@ class JobsQueue(BaseModel):
     )
 
 
-class JobsRunAs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsRunAs(BrickflowBundleModel):
     service_principal_name: Optional[str] = Field(
         None,
         description="Application ID of an active service principal. Setting this field requires the `servicePrincipal/user` role.",
@@ -1002,11 +815,7 @@ class JobsRunAs(BaseModel):
     )
 
 
-class JobsSchedule(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsSchedule(BrickflowBundleModel):
     pause_status: Optional[str] = Field(
         None, description="Indicate whether this schedule is paused or not."
     )
@@ -1020,11 +829,7 @@ class JobsSchedule(BaseModel):
     )
 
 
-class JobsTasksConditionTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksConditionTask(TaskBrickflowBundleModel):
     left: str = Field(
         ...,
         description="The left operand of the condition task. Can be either a string value or a job state or parameter reference.",
@@ -1039,11 +844,7 @@ class JobsTasksConditionTask(BaseModel):
     )
 
 
-class JobsTasksDbtTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksDbtTask(TaskBrickflowBundleModel):
     catalog: Optional[str] = Field(
         None,
         description="Optional name of the catalog to use. The value is the top level in the 3-level namespace of Unity Catalog (catalog / schema / relation). The catalog value can only be specified if a warehouse_id is specified. Requires dbt-databricks >= 1.1.1.",
@@ -1075,11 +876,7 @@ class JobsTasksDbtTask(BaseModel):
     )
 
 
-class JobsTasksDependsOn(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksDependsOn(BrickflowBundleModel):
     outcome: Optional[str] = Field(
         None,
         description="Can only be specified on condition task dependencies. The outcome of the dependent task that must be met for this task to run.",
@@ -1087,11 +884,7 @@ class JobsTasksDependsOn(BaseModel):
     task_key: str = Field(..., description="The name of the task this task depends on.")
 
 
-class JobsTasksEmailNotifications(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksEmailNotifications(BrickflowBundleModel):
     no_alert_for_skipped_runs: Optional[
         Union[
             bool,
@@ -1121,15 +914,41 @@ class JobsTasksEmailNotifications(BaseModel):
     )
 
 
-class JobsTasksForEachTask(BaseModel):
-    pass
+class JobsTasksForEachTask(TaskBrickflowBundleModel):
+    """
+    The ForEachTask class is designed to handle the execution of For each task in a Databricks workflow.
+    Use the For each task to run a task in a loop, passing a different set of parameters to each iteration of the task.
+    Adding the For each task to a job requires defining two tasks:
+        The nested task is the task to run for each iteration of the For each task.
+        Standard Databricks Jobs task types.
+    You cannot add another For each task as the nested task.
+
+    Attributes:
+        inputs (Json): A JSON formatted array of values. This can be an array of the following data types:
+            - key-value pairs
+            - Strings, numbers, or Boolean types
+            - Arbitrarily complex JSON objects
+        task: The task to run for each iteration of the For each task.
+        concurrency (int, optional): The number of concurrent executions of the task. The default value is 1.
+
+    Examples:
+        TODO
+    """
+
+    inputs: Json = Field(
+        ..., description="The name of the input parameter to the task."
+    )
+
+    concurrency: int = Field(
+        default=1, description="The number of concurrent executions of the task."
+    )
+
+    task: Optional[dict] = Field(
+        default=None, description="Holder for inner task dump. Populated Automatically"
+    )
 
 
-class JobsTasksHealthRules(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksHealthRules(BrickflowBundleModel):
     metric: str
     op: str
     value: Union[
@@ -1143,19 +962,11 @@ class JobsTasksHealthRules(BaseModel):
     )
 
 
-class JobsTasksHealth(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksHealth(BrickflowBundleModel):
     rules: Optional[List[JobsTasksHealthRules]] = None
 
 
-class JobsTasksLibrariesCran(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksLibrariesCran(BrickflowBundleModel):
     package: str = Field(..., description="The name of the CRAN package to install.")
     repo: Optional[str] = Field(
         None,
@@ -1163,11 +974,7 @@ class JobsTasksLibrariesCran(BaseModel):
     )
 
 
-class JobsTasksLibrariesMaven(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksLibrariesMaven(BrickflowBundleModel):
     coordinates: str = Field(
         ...,
         description='Gradle-style maven coordinates. For example: "org.jsoup:jsoup:1.7.2".',
@@ -1182,11 +989,7 @@ class JobsTasksLibrariesMaven(BaseModel):
     )
 
 
-class JobsTasksLibrariesPypi(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksLibrariesPypi(BrickflowBundleModel):
     package: str = Field(
         ...,
         description='The name of the pypi package to install. An optional exact version specification is also\nsupported. Examples: "simplejson" and "simplejson==3.8.0".',
@@ -1197,11 +1000,7 @@ class JobsTasksLibrariesPypi(BaseModel):
     )
 
 
-class JobsTasksLibraries(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksLibraries(BrickflowBundleModel):
     cran: Optional[JobsTasksLibrariesCran] = None
     egg: Optional[str] = Field(
         None,
@@ -1223,11 +1022,7 @@ class JobsTasksLibraries(BaseModel):
     )
 
 
-class JobsTasksNewClusterAutoscale(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterAutoscale(BrickflowBundleModel):
     max_workers: Optional[
         Union[
             float,
@@ -1252,11 +1047,7 @@ class JobsTasksNewClusterAutoscale(BaseModel):
     )
 
 
-class JobsTasksNewClusterAwsAttributes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterAwsAttributes(BrickflowBundleModel):
     availability: Optional[str] = None
     ebs_volume_count: Optional[
         Union[
@@ -1335,11 +1126,7 @@ class JobsTasksNewClusterAwsAttributes(BaseModel):
     )
 
 
-class JobsTasksNewClusterAzureAttributesLogAnalyticsInfo(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterAzureAttributesLogAnalyticsInfo(BrickflowBundleModel):
     log_analytics_primary_key: Optional[str] = Field(
         None, description="<needs content added>"
     )
@@ -1348,11 +1135,7 @@ class JobsTasksNewClusterAzureAttributesLogAnalyticsInfo(BaseModel):
     )
 
 
-class JobsTasksNewClusterAzureAttributes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterAzureAttributes(BrickflowBundleModel):
     availability: Optional[str] = None
     first_on_demand: Optional[
         Union[
@@ -1381,19 +1164,11 @@ class JobsTasksNewClusterAzureAttributes(BaseModel):
     )
 
 
-class JobsTasksNewClusterClusterLogConfDbfs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterClusterLogConfDbfs(BrickflowBundleModel):
     destination: str = Field(..., description="dbfs destination, e.g. `dbfs:/my/path`")
 
 
-class JobsTasksNewClusterClusterLogConfS(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterClusterLogConfS(BrickflowBundleModel):
     canned_acl: Optional[str] = Field(
         None,
         description="(Optional) Set canned access control list for the logs, e.g. `bucket-owner-full-control`.\nIf `canned_cal` is set, please make sure the cluster iam role has `s3:PutObjectAcl` permission on\nthe destination bucket and prefix. The full list of possible canned acl can be found at\nhttp://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl.\nPlease also note that by default only the object owner gets full controls. If you are using cross account\nrole for writing data, you may want to set `bucket-owner-full-control` to make bucket owner able to\nread the logs.",
@@ -1431,38 +1206,22 @@ class JobsTasksNewClusterClusterLogConfS(BaseModel):
     )
 
 
-class JobsTasksNewClusterClusterLogConf(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterClusterLogConf(BrickflowBundleModel):
     dbfs: Optional[JobsTasksNewClusterClusterLogConfDbfs] = None
     s3: Optional[JobsTasksNewClusterClusterLogConfS] = None
 
 
-class JobsTasksNewClusterDockerImageBasicAuth(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterDockerImageBasicAuth(BrickflowBundleModel):
     password: Optional[str] = Field(None, description="Password of the user")
     username: Optional[str] = Field(None, description="Name of the user")
 
 
-class JobsTasksNewClusterDockerImage(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterDockerImage(BrickflowBundleModel):
     basic_auth: Optional[JobsTasksNewClusterDockerImageBasicAuth] = None
     url: Optional[str] = Field(None, description="URL of the docker image.")
 
 
-class JobsTasksNewClusterGcpAttributes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterGcpAttributes(BrickflowBundleModel):
     availability: Optional[str] = None
     boot_disk_size: Optional[
         Union[
@@ -1504,50 +1263,30 @@ class JobsTasksNewClusterGcpAttributes(BaseModel):
     )
 
 
-class JobsTasksNewClusterInitScriptsAbfss(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterInitScriptsAbfss(BrickflowBundleModel):
     destination: str = Field(
         ...,
         description="abfss destination, e.g. `abfss://<container-name>@<storage-account-name>.dfs.core.windows.net/<directory-name>`.",
     )
 
 
-class JobsTasksNewClusterInitScriptsDbfs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterInitScriptsDbfs(BrickflowBundleModel):
     destination: str = Field(..., description="dbfs destination, e.g. `dbfs:/my/path`")
 
 
-class JobsTasksNewClusterInitScriptsFile(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterInitScriptsFile(BrickflowBundleModel):
     destination: str = Field(
         ..., description="local file destination, e.g. `file:/my/local/file.sh`"
     )
 
 
-class JobsTasksNewClusterInitScriptsGcs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterInitScriptsGcs(BrickflowBundleModel):
     destination: str = Field(
         ..., description="GCS destination/URI, e.g. `gs://my-bucket/some-prefix`"
     )
 
 
-class JobsTasksNewClusterInitScriptsS(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterInitScriptsS(BrickflowBundleModel):
     canned_acl: Optional[str] = Field(
         None,
         description="(Optional) Set canned access control list for the logs, e.g. `bucket-owner-full-control`.\nIf `canned_cal` is set, please make sure the cluster iam role has `s3:PutObjectAcl` permission on\nthe destination bucket and prefix. The full list of possible canned acl can be found at\nhttp://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl.\nPlease also note that by default only the object owner gets full controls. If you are using cross account\nrole for writing data, you may want to set `bucket-owner-full-control` to make bucket owner able to\nread the logs.",
@@ -1585,33 +1324,21 @@ class JobsTasksNewClusterInitScriptsS(BaseModel):
     )
 
 
-class JobsTasksNewClusterInitScriptsVolumes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterInitScriptsVolumes(BrickflowBundleModel):
     destination: str = Field(
         ...,
         description="Unity Catalog Volumes file destination, e.g. `/Volumes/my-init.sh`",
     )
 
 
-class JobsTasksNewClusterInitScriptsWorkspace(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterInitScriptsWorkspace(BrickflowBundleModel):
     destination: str = Field(
         ...,
         description="workspace files destination, e.g. `/Users/user1@databricks.com/my-init.sh`",
     )
 
 
-class JobsTasksNewClusterInitScripts(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterInitScripts(BrickflowBundleModel):
     abfss: Optional[JobsTasksNewClusterInitScriptsAbfss] = None
     dbfs: Optional[JobsTasksNewClusterInitScriptsDbfs] = None
     file: Optional[JobsTasksNewClusterInitScriptsFile] = None
@@ -1621,11 +1348,7 @@ class JobsTasksNewClusterInitScripts(BaseModel):
     workspace: Optional[JobsTasksNewClusterInitScriptsWorkspace] = None
 
 
-class JobsTasksNewClusterWorkloadTypeClients(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterWorkloadTypeClients(BrickflowBundleModel):
     jobs: Optional[
         Union[
             bool,
@@ -1646,19 +1369,11 @@ class JobsTasksNewClusterWorkloadTypeClients(BaseModel):
     )
 
 
-class JobsTasksNewClusterWorkloadType(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewClusterWorkloadType(BrickflowBundleModel):
     clients: JobsTasksNewClusterWorkloadTypeClients
 
 
-class JobsTasksNewCluster(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNewCluster(BrickflowBundleModel):
     apply_policy_default_values: Optional[
         Union[
             bool,
@@ -1777,11 +1492,7 @@ class JobsTasksNewCluster(BaseModel):
     workload_type: Optional[JobsTasksNewClusterWorkloadType] = None
 
 
-class JobsTasksNotebookTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNotebookTask(TaskBrickflowBundleModel):
     base_parameters: Optional[Dict[str, str]] = None
     notebook_path: str = Field(
         ...,
@@ -1797,11 +1508,7 @@ class JobsTasksNotebookTask(BaseModel):
     )
 
 
-class JobsTasksNotificationSettings(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksNotificationSettings(BrickflowBundleModel):
     alert_on_last_attempt: Optional[
         Union[
             bool,
@@ -1837,11 +1544,7 @@ class JobsTasksNotificationSettings(BaseModel):
     )
 
 
-class JobsTasksPipelineTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksPipelineTask(TaskBrickflowBundleModel):
     full_refresh: Optional[
         Union[
             bool,
@@ -1857,11 +1560,7 @@ class JobsTasksPipelineTask(BaseModel):
     )
 
 
-class JobsTasksPythonWheelTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksPythonWheelTask(TaskBrickflowBundleModel):
     entry_point: str = Field(
         ...,
         description="Named entry point to use, if it does not exist in the metadata of the package it executes the function from the package directly using `$packageName.$entryPoint()`",
@@ -1874,11 +1573,7 @@ class JobsTasksPythonWheelTask(BaseModel):
     )
 
 
-class JobsTasksRunJobTaskPipelineParams(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksRunJobTaskPipelineParams(BrickflowBundleModel):
     full_refresh: Optional[
         Union[
             bool,
@@ -1891,11 +1586,7 @@ class JobsTasksRunJobTaskPipelineParams(BaseModel):
     )
 
 
-class JobsTasksRunJobTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksRunJobTask(TaskBrickflowBundleModel):
     dbt_commands: Optional[List[str]] = Field(
         None,
         description='An array of commands to execute for jobs with the dbt task, for example `"dbt_commands": ["dbt deps", "dbt seed", "dbt deps", "dbt seed", "dbt run"]`',
@@ -1925,11 +1616,7 @@ class JobsTasksRunJobTask(BaseModel):
     sql_params: Optional[Dict[str, str]] = None
 
 
-class JobsTasksSparkJarTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSparkJarTask(TaskBrickflowBundleModel):
     jar_uri: Optional[str] = Field(
         None,
         description="Deprecated since 04/2016. Provide a `jar` through the `libraries` field instead. For an example, see :method:jobs/create.",
@@ -1944,11 +1631,7 @@ class JobsTasksSparkJarTask(BaseModel):
     )
 
 
-class JobsTasksSparkPythonTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSparkPythonTask(TaskBrickflowBundleModel):
     parameters: Optional[List[str]] = Field(
         None,
         description="Command line parameters passed to the Python file.\n\nUse [Task parameter variables](https://docs.databricks.com/jobs.html#parameter-variables) to set parameters containing information about job runs.",
@@ -1963,22 +1646,14 @@ class JobsTasksSparkPythonTask(BaseModel):
     )
 
 
-class JobsTasksSparkSubmitTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSparkSubmitTask(TaskBrickflowBundleModel):
     parameters: Optional[List[str]] = Field(
         None,
         description="Command-line parameters passed to spark submit.\n\nUse [Task parameter variables](https://docs.databricks.com/jobs.html#parameter-variables) to set parameters containing information about job runs.",
     )
 
 
-class JobsTasksSqlTaskAlertSubscriptions(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSqlTaskAlertSubscriptions(BrickflowBundleModel):
     destination_id: Optional[str] = Field(
         None,
         description="The canonical identifier of the destination to receive email notification. This parameter is mutually exclusive with user_name. You cannot set both destination_id and user_name for subscription notifications.",
@@ -1989,11 +1664,7 @@ class JobsTasksSqlTaskAlertSubscriptions(BaseModel):
     )
 
 
-class JobsTasksSqlTaskAlert(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSqlTaskAlert(BrickflowBundleModel):
     alert_id: str = Field(..., description="The canonical identifier of the SQL alert.")
     pause_subscriptions: Optional[
         Union[
@@ -2011,11 +1682,7 @@ class JobsTasksSqlTaskAlert(BaseModel):
     )
 
 
-class JobsTasksSqlTaskDashboardSubscriptions(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSqlTaskDashboardSubscriptions(BrickflowBundleModel):
     destination_id: Optional[str] = Field(
         None,
         description="The canonical identifier of the destination to receive email notification. This parameter is mutually exclusive with user_name. You cannot set both destination_id and user_name for subscription notifications.",
@@ -2026,11 +1693,7 @@ class JobsTasksSqlTaskDashboardSubscriptions(BaseModel):
     )
 
 
-class JobsTasksSqlTaskDashboard(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSqlTaskDashboard(BrickflowBundleModel):
     custom_subject: Optional[str] = Field(
         None, description="Subject of the email sent to subscribers of this task."
     )
@@ -2053,11 +1716,7 @@ class JobsTasksSqlTaskDashboard(BaseModel):
     )
 
 
-class JobsTasksSqlTaskFile(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSqlTaskFile(BrickflowBundleModel):
     path: str = Field(
         ...,
         description="Path of the SQL file. Must be relative if the source is a remote Git repository and absolute for workspace paths.",
@@ -2068,19 +1727,11 @@ class JobsTasksSqlTaskFile(BaseModel):
     )
 
 
-class JobsTasksSqlTaskQuery(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSqlTaskQuery(BrickflowBundleModel):
     query_id: str = Field(..., description="The canonical identifier of the SQL query.")
 
 
-class JobsTasksSqlTask(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksSqlTask(BrickflowBundleModel):
     alert: Optional[JobsTasksSqlTaskAlert] = None
     dashboard: Optional[JobsTasksSqlTaskDashboard] = None
     file: Optional[JobsTasksSqlTaskFile] = None
@@ -2092,43 +1743,25 @@ class JobsTasksSqlTask(BaseModel):
     )
 
 
-class JobsTasksWebhookNotificationsOnDurationWarningThresholdExceeded(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksWebhookNotificationsOnDurationWarningThresholdExceeded(
+    BrickflowBundleModel
+):
     id: str
 
 
-class JobsTasksWebhookNotificationsOnFailure(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksWebhookNotificationsOnFailure(BrickflowBundleModel):
     id: str
 
 
-class JobsTasksWebhookNotificationsOnStart(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksWebhookNotificationsOnStart(BrickflowBundleModel):
     id: str
 
 
-class JobsTasksWebhookNotificationsOnSuccess(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksWebhookNotificationsOnSuccess(BrickflowBundleModel):
     id: str
 
 
-class JobsTasksWebhookNotifications(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasksWebhookNotifications(BrickflowBundleModel):
     on_duration_warning_threshold_exceeded: Optional[
         List[JobsTasksWebhookNotificationsOnDurationWarningThresholdExceeded]
     ] = Field(
@@ -2149,17 +1782,14 @@ class JobsTasksWebhookNotifications(BaseModel):
     )
 
 
-class JobsTasks(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTasks(BrickflowBundleModel):
     condition_task: Optional[JobsTasksConditionTask] = None
     dbt_task: Optional[JobsTasksDbtTask] = None
     depends_on: Optional[List[JobsTasksDependsOn]] = Field(
         None,
         description="An optional array of objects specifying the dependency graph of the task. All tasks specified in this field must complete before executing this task. The task will run only if the `run_if` condition is true.\nThe key is `task_key`, and the value is the name assigned to the dependent task.",
     )
+
     description: Optional[str] = Field(
         None, description="An optional description for this task."
     )
@@ -2181,6 +1811,7 @@ class JobsTasks(BaseModel):
         description="If existing_cluster_id, the ID of an existing cluster that is used for all runs.\nWhen running jobs or tasks on an existing cluster, you may need to manually restart\nthe cluster if it stops responding. We suggest running jobs and tasks on new clusters for\ngreater reliability",
     )
     for_each_task: Optional[JobsTasksForEachTask] = None
+    parent_for_each_task: Optional[str] = None
     health: Optional[JobsTasksHealth] = None
     job_cluster_key: Optional[str] = Field(
         None,
@@ -2254,12 +1885,71 @@ class JobsTasks(BaseModel):
     )
     webhook_notifications: Optional[JobsTasksWebhookNotifications] = None
 
+    def model_dump(self) -> dict:
+        """Serializes the Task into a dictionary suitable for use as a JSON request body."""
+        body = {}
+        if self.condition_task:
+            body["condition_task"] = self.condition_task.as_dict()
+        if self.dbt_task:
+            body["dbt_task"] = self.dbt_task.as_dict()
+        if self.depends_on:
+            body["depends_on"] = [v.as_dict() for v in self.depends_on]
+        if self.description is not None:
+            body["description"] = self.description
+        if self.disable_auto_optimization is not None:
+            body["disable_auto_optimization"] = self.disable_auto_optimization
+        if self.email_notifications:
+            body["email_notifications"] = self.email_notifications.as_dict()
+        if self.environment_key is not None:
+            body["environment_key"] = self.environment_key
+        if self.existing_cluster_id is not None:
+            body["existing_cluster_id"] = self.existing_cluster_id
+        if self.for_each_task:
+            body["for_each_task"] = self.for_each_task.as_dict()
+        if self.health:
+            body["health"] = self.health.as_dict()
+        if self.job_cluster_key is not None:
+            body["job_cluster_key"] = self.job_cluster_key
+        if self.libraries:
+            body["libraries"] = [v.as_dict() for v in self.libraries]
+        if self.max_retries is not None:
+            body["max_retries"] = self.max_retries
+        if self.min_retry_interval_millis is not None:
+            body["min_retry_interval_millis"] = self.min_retry_interval_millis
+        if self.new_cluster:
+            body["new_cluster"] = self.new_cluster.as_dict()
+        if self.notebook_task:
+            body["notebook_task"] = self.notebook_task.as_dict()
+        if self.notification_settings:
+            body["notification_settings"] = self.notification_settings.as_dict()
+        if self.pipeline_task:
+            body["pipeline_task"] = self.pipeline_task.as_dict()
+        if self.python_wheel_task:
+            body["python_wheel_task"] = self.python_wheel_task.as_dict()
+        if self.retry_on_timeout is not None:
+            body["retry_on_timeout"] = self.retry_on_timeout
+        if self.run_if is not None:
+            body["run_if"] = self.run_if.value
+        if self.run_job_task:
+            body["run_job_task"] = self.run_job_task.as_dict()
+        if self.spark_jar_task:
+            body["spark_jar_task"] = self.spark_jar_task.as_dict()
+        if self.spark_python_task:
+            body["spark_python_task"] = self.spark_python_task.as_dict()
+        if self.spark_submit_task:
+            body["spark_submit_task"] = self.spark_submit_task.as_dict()
+        if self.sql_task:
+            body["sql_task"] = self.sql_task.as_dict()
+        if self.task_key is not None:
+            body["task_key"] = self.task_key
+        if self.timeout_seconds is not None:
+            body["timeout_seconds"] = self.timeout_seconds
+        if self.webhook_notifications:
+            body["webhook_notifications"] = self.webhook_notifications.as_dict()
+        return body
 
-class JobsTriggerFileArrival(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
 
+class JobsTriggerFileArrival(BrickflowBundleModel):
     min_time_between_triggers_seconds: Optional[
         Union[
             float,
@@ -2288,11 +1978,7 @@ class JobsTriggerFileArrival(BaseModel):
     )
 
 
-class JobsTriggerTable(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTriggerTable(BrickflowBundleModel):
     condition: Optional[str] = Field(
         None, description="The table(s) condition based on which to trigger a job run."
     )
@@ -2324,11 +2010,7 @@ class JobsTriggerTable(BaseModel):
     )
 
 
-class JobsTriggerTableUpdate(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTriggerTableUpdate(BrickflowBundleModel):
     condition: Optional[str] = Field(
         None, description="The table(s) condition based on which to trigger a job run."
     )
@@ -2360,11 +2042,7 @@ class JobsTriggerTableUpdate(BaseModel):
     )
 
 
-class JobsTrigger(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsTrigger(BrickflowBundleModel):
     file_arrival: Optional[JobsTriggerFileArrival] = None
     pause_status: Optional[str] = Field(
         None, description="Whether this trigger is paused or not."
@@ -2373,43 +2051,23 @@ class JobsTrigger(BaseModel):
     table_update: Optional[JobsTriggerTableUpdate] = None
 
 
-class JobsWebhookNotificationsOnDurationWarningThresholdExceeded(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsWebhookNotificationsOnDurationWarningThresholdExceeded(BrickflowBundleModel):
     id: str
 
 
-class JobsWebhookNotificationsOnFailure(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsWebhookNotificationsOnFailure(BrickflowBundleModel):
     id: str
 
 
-class JobsWebhookNotificationsOnStart(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsWebhookNotificationsOnStart(BrickflowBundleModel):
     id: str
 
 
-class JobsWebhookNotificationsOnSuccess(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsWebhookNotificationsOnSuccess(BrickflowBundleModel):
     id: str
 
 
-class JobsWebhookNotifications(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class JobsWebhookNotifications(BrickflowBundleModel):
     on_duration_warning_threshold_exceeded: Optional[
         List[JobsWebhookNotificationsOnDurationWarningThresholdExceeded]
     ] = Field(
@@ -2431,10 +2089,6 @@ class JobsWebhookNotifications(BaseModel):
 
 
 class Jobs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
     continuous: Optional[JobsContinuous] = None
     deployment: Optional[JobsDeployment] = None
     description: Optional[str] = Field(
@@ -2502,11 +2156,7 @@ class Jobs(BaseModel):
     webhook_notifications: Optional[JobsWebhookNotifications] = None
 
 
-class ModelServingEndpointsConfigAutoCaptureConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigAutoCaptureConfig(BrickflowBundleModel):
     catalog_name: Optional[str] = Field(
         None,
         description="The name of the catalog in Unity Catalog. NOTE: On update, you cannot change the catalog name if it was already set.",
@@ -2532,23 +2182,17 @@ class ModelServingEndpointsConfigAutoCaptureConfig(BaseModel):
     )
 
 
-class ModelServingEndpointsConfigServedEntitiesExternalModelAi21labsConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigServedEntitiesExternalModelAi21labsConfig(
+    BrickflowBundleModel
+):
     ai21labs_api_key: str = Field(
         ..., description="The Databricks secret key reference for an AI21Labs API key."
     )
 
 
 class ModelServingEndpointsConfigServedEntitiesExternalModelAmazonBedrockConfig(
-    BaseModel
+    BrickflowBundleModel
 ):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
     aws_access_key_id: str = Field(
         ...,
         description="The Databricks secret key reference for an AWS Access Key ID with permissions to interact with Bedrock services.",
@@ -2566,33 +2210,25 @@ class ModelServingEndpointsConfigServedEntitiesExternalModelAmazonBedrockConfig(
     )
 
 
-class ModelServingEndpointsConfigServedEntitiesExternalModelAnthropicConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigServedEntitiesExternalModelAnthropicConfig(
+    BrickflowBundleModel
+):
     anthropic_api_key: str = Field(
         ..., description="The Databricks secret key reference for an Anthropic API key."
     )
 
 
-class ModelServingEndpointsConfigServedEntitiesExternalModelCohereConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigServedEntitiesExternalModelCohereConfig(
+    BrickflowBundleModel
+):
     cohere_api_key: str = Field(
         ..., description="The Databricks secret key reference for a Cohere API key."
     )
 
 
 class ModelServingEndpointsConfigServedEntitiesExternalModelDatabricksModelServingConfig(
-    BaseModel
+    BrickflowBundleModel
 ):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
     databricks_api_token: str = Field(
         ...,
         description="The Databricks secret key reference for a Databricks API token that corresponds to a user or service\nprincipal with Can Query access to the model serving endpoint pointed to by this external model.\n",
@@ -2603,11 +2239,9 @@ class ModelServingEndpointsConfigServedEntitiesExternalModelDatabricksModelServi
     )
 
 
-class ModelServingEndpointsConfigServedEntitiesExternalModelOpenaiConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigServedEntitiesExternalModelOpenaiConfig(
+    BrickflowBundleModel
+):
     microsoft_entra_client_id: Optional[str] = Field(
         None,
         description="This field is only required for Azure AD OpenAI and is the Microsoft Entra Client ID.\n",
@@ -2646,21 +2280,15 @@ class ModelServingEndpointsConfigServedEntitiesExternalModelOpenaiConfig(BaseMod
     )
 
 
-class ModelServingEndpointsConfigServedEntitiesExternalModelPalmConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigServedEntitiesExternalModelPalmConfig(
+    BrickflowBundleModel
+):
     palm_api_key: str = Field(
         ..., description="The Databricks secret key reference for a PaLM API key."
     )
 
 
-class ModelServingEndpointsConfigServedEntitiesExternalModel(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigServedEntitiesExternalModel(BrickflowBundleModel):
     ai21labs_config: Optional[
         ModelServingEndpointsConfigServedEntitiesExternalModelAi21labsConfig
     ] = None
@@ -2690,11 +2318,7 @@ class ModelServingEndpointsConfigServedEntitiesExternalModel(BaseModel):
     task: str = Field(..., description="The task type of the external model.")
 
 
-class ModelServingEndpointsConfigServedEntities(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigServedEntities(BrickflowBundleModel):
     entity_name: Optional[str] = Field(
         None,
         description="The name of the entity to be served. The entity may be a model in the Databricks Model Registry, a model in the Unity Catalog (UC),\nor a function of type FEATURE_SPEC in the UC. If it is a UC object, the full name of the object should be given in the form of\n__catalog_name__.__schema_name__.__model_name__.\n",
@@ -2758,11 +2382,7 @@ class ModelServingEndpointsConfigServedEntities(BaseModel):
     )
 
 
-class ModelServingEndpointsConfigServedModels(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigServedModels(BrickflowBundleModel):
     environment_vars: Optional[Dict[str, str]] = None
     instance_profile_arn: Optional[str] = Field(
         None,
@@ -2799,11 +2419,7 @@ class ModelServingEndpointsConfigServedModels(BaseModel):
     )
 
 
-class ModelServingEndpointsConfigTrafficConfigRoutes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigTrafficConfigRoutes(BrickflowBundleModel):
     served_model_name: str = Field(
         ...,
         description="The name of the served model this route configures traffic for.",
@@ -2819,22 +2435,14 @@ class ModelServingEndpointsConfigTrafficConfigRoutes(BaseModel):
     )
 
 
-class ModelServingEndpointsConfigTrafficConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfigTrafficConfig(BrickflowBundleModel):
     routes: Optional[List[ModelServingEndpointsConfigTrafficConfigRoutes]] = Field(
         None,
         description="The list of routes that define traffic to each served entity.",
     )
 
 
-class ModelServingEndpointsConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsConfig(BrickflowBundleModel):
     auto_capture_config: Optional[ModelServingEndpointsConfigAutoCaptureConfig] = None
     served_entities: Optional[List[ModelServingEndpointsConfigServedEntities]] = Field(
         None,
@@ -2847,22 +2455,14 @@ class ModelServingEndpointsConfig(BaseModel):
     traffic_config: Optional[ModelServingEndpointsConfigTrafficConfig] = None
 
 
-class ModelServingEndpointsPermissions(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsPermissions(BrickflowBundleModel):
     group_name: Optional[str] = None
     level: str
     service_principal_name: Optional[str] = None
     user_name: Optional[str] = None
 
 
-class ModelServingEndpointsRateLimits(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsRateLimits(BrickflowBundleModel):
     calls: Union[
         float,
         constr(
@@ -2882,22 +2482,14 @@ class ModelServingEndpointsRateLimits(BaseModel):
     )
 
 
-class ModelServingEndpointsTags(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpointsTags(BrickflowBundleModel):
     key: str = Field(..., description="Key field for a serving endpoint tag.")
     value: Optional[str] = Field(
         None, description="Optional value field for a serving endpoint tag."
     )
 
 
-class ModelServingEndpoints(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelServingEndpoints(BrickflowBundleModel):
     config: ModelServingEndpointsConfig
     name: str = Field(
         ...,
@@ -2922,20 +2514,12 @@ class ModelServingEndpoints(BaseModel):
     )
 
 
-class ModelsLatestVersionsTags(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelsLatestVersionsTags(BrickflowBundleModel):
     key: Optional[str] = Field(None, description="The tag key.")
     value: Optional[str] = Field(None, description="The tag value.")
 
 
-class ModelsLatestVersions(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelsLatestVersions(BrickflowBundleModel):
     creation_timestamp: Optional[
         Union[
             float,
@@ -2989,31 +2573,19 @@ class ModelsLatestVersions(BaseModel):
     version: Optional[str] = Field(None, description="Model's version number.")
 
 
-class ModelsPermissions(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelsPermissions(BrickflowBundleModel):
     group_name: Optional[str] = None
     level: str
     service_principal_name: Optional[str] = None
     user_name: Optional[str] = None
 
 
-class ModelsTags(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class ModelsTags(BrickflowBundleModel):
     key: Optional[str] = Field(None, description="The tag key.")
     value: Optional[str] = Field(None, description="The tag value.")
 
 
-class Models(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Models(BrickflowBundleModel):
     creation_timestamp: Optional[
         Union[
             float,
@@ -3053,11 +2625,7 @@ class Models(BaseModel):
     )
 
 
-class PipelinesClustersAutoscale(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersAutoscale(BrickflowBundleModel):
     max_workers: Union[
         float,
         constr(
@@ -3082,11 +2650,7 @@ class PipelinesClustersAutoscale(BaseModel):
     )
 
 
-class PipelinesClustersAwsAttributes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersAwsAttributes(BrickflowBundleModel):
     availability: Optional[str] = None
     ebs_volume_count: Optional[
         Union[
@@ -3165,11 +2729,7 @@ class PipelinesClustersAwsAttributes(BaseModel):
     )
 
 
-class PipelinesClustersAzureAttributesLogAnalyticsInfo(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersAzureAttributesLogAnalyticsInfo(BrickflowBundleModel):
     log_analytics_primary_key: Optional[str] = Field(
         None, description="<needs content added>"
     )
@@ -3178,11 +2738,7 @@ class PipelinesClustersAzureAttributesLogAnalyticsInfo(BaseModel):
     )
 
 
-class PipelinesClustersAzureAttributes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersAzureAttributes(BrickflowBundleModel):
     availability: Optional[str] = None
     first_on_demand: Optional[
         Union[
@@ -3211,19 +2767,11 @@ class PipelinesClustersAzureAttributes(BaseModel):
     )
 
 
-class PipelinesClustersClusterLogConfDbfs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersClusterLogConfDbfs(BrickflowBundleModel):
     destination: str = Field(..., description="dbfs destination, e.g. `dbfs:/my/path`")
 
 
-class PipelinesClustersClusterLogConfS(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersClusterLogConfS(BrickflowBundleModel):
     canned_acl: Optional[str] = Field(
         None,
         description="(Optional) Set canned access control list for the logs, e.g. `bucket-owner-full-control`.\nIf `canned_cal` is set, please make sure the cluster iam role has `s3:PutObjectAcl` permission on\nthe destination bucket and prefix. The full list of possible canned acl can be found at\nhttp://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl.\nPlease also note that by default only the object owner gets full controls. If you are using cross account\nrole for writing data, you may want to set `bucket-owner-full-control` to make bucket owner able to\nread the logs.",
@@ -3261,20 +2809,12 @@ class PipelinesClustersClusterLogConfS(BaseModel):
     )
 
 
-class PipelinesClustersClusterLogConf(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersClusterLogConf(BrickflowBundleModel):
     dbfs: Optional[PipelinesClustersClusterLogConfDbfs] = None
     s3: Optional[PipelinesClustersClusterLogConfS] = None
 
 
-class PipelinesClustersGcpAttributes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersGcpAttributes(BrickflowBundleModel):
     availability: Optional[str] = None
     boot_disk_size: Optional[
         Union[
@@ -3316,50 +2856,30 @@ class PipelinesClustersGcpAttributes(BaseModel):
     )
 
 
-class PipelinesClustersInitScriptsAbfss(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersInitScriptsAbfss(BrickflowBundleModel):
     destination: str = Field(
         ...,
         description="abfss destination, e.g. `abfss://<container-name>@<storage-account-name>.dfs.core.windows.net/<directory-name>`.",
     )
 
 
-class PipelinesClustersInitScriptsDbfs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersInitScriptsDbfs(BrickflowBundleModel):
     destination: str = Field(..., description="dbfs destination, e.g. `dbfs:/my/path`")
 
 
-class PipelinesClustersInitScriptsFile(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersInitScriptsFile(BrickflowBundleModel):
     destination: str = Field(
         ..., description="local file destination, e.g. `file:/my/local/file.sh`"
     )
 
 
-class PipelinesClustersInitScriptsGcs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersInitScriptsGcs(BrickflowBundleModel):
     destination: str = Field(
         ..., description="GCS destination/URI, e.g. `gs://my-bucket/some-prefix`"
     )
 
 
-class PipelinesClustersInitScriptsS(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersInitScriptsS(BrickflowBundleModel):
     canned_acl: Optional[str] = Field(
         None,
         description="(Optional) Set canned access control list for the logs, e.g. `bucket-owner-full-control`.\nIf `canned_cal` is set, please make sure the cluster iam role has `s3:PutObjectAcl` permission on\nthe destination bucket and prefix. The full list of possible canned acl can be found at\nhttp://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl.\nPlease also note that by default only the object owner gets full controls. If you are using cross account\nrole for writing data, you may want to set `bucket-owner-full-control` to make bucket owner able to\nread the logs.",
@@ -3397,33 +2917,21 @@ class PipelinesClustersInitScriptsS(BaseModel):
     )
 
 
-class PipelinesClustersInitScriptsVolumes(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersInitScriptsVolumes(BrickflowBundleModel):
     destination: str = Field(
         ...,
         description="Unity Catalog Volumes file destination, e.g. `/Volumes/my-init.sh`",
     )
 
 
-class PipelinesClustersInitScriptsWorkspace(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersInitScriptsWorkspace(BrickflowBundleModel):
     destination: str = Field(
         ...,
         description="workspace files destination, e.g. `/Users/user1@databricks.com/my-init.sh`",
     )
 
 
-class PipelinesClustersInitScripts(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClustersInitScripts(BrickflowBundleModel):
     abfss: Optional[PipelinesClustersInitScriptsAbfss] = None
     dbfs: Optional[PipelinesClustersInitScriptsDbfs] = None
     file: Optional[PipelinesClustersInitScriptsFile] = None
@@ -3433,11 +2941,7 @@ class PipelinesClustersInitScripts(BaseModel):
     workspace: Optional[PipelinesClustersInitScriptsWorkspace] = None
 
 
-class PipelinesClusters(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesClusters(BrickflowBundleModel):
     apply_policy_default_values: Optional[
         Union[
             bool,
@@ -3502,11 +3006,7 @@ class PipelinesClusters(BaseModel):
     )
 
 
-class PipelinesDeployment(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesDeployment(BrickflowBundleModel):
     kind: Optional[str] = Field(
         None, description="The deployment method that manages the pipeline."
     )
@@ -3516,20 +3016,12 @@ class PipelinesDeployment(BaseModel):
     )
 
 
-class PipelinesFilters(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesFilters(BrickflowBundleModel):
     exclude: Optional[List[str]] = Field(None, description="Paths to exclude.")
     include: Optional[List[str]] = Field(None, description="Paths to include.")
 
 
-class PipelinesGatewayDefinition(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesGatewayDefinition(BrickflowBundleModel):
     connection_id: Optional[str] = Field(
         None,
         description="Immutable. The Unity Catalog connection this gateway pipeline uses to communicate with the source.",
@@ -3548,11 +3040,7 @@ class PipelinesGatewayDefinition(BaseModel):
     )
 
 
-class PipelinesIngestionDefinitionObjectsSchemaTableConfiguration(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesIngestionDefinitionObjectsSchemaTableConfiguration(BrickflowBundleModel):
     primary_keys: Optional[List[str]] = Field(
         None, description="The primary key of the table used to apply changes."
     )
@@ -3572,11 +3060,7 @@ class PipelinesIngestionDefinitionObjectsSchemaTableConfiguration(BaseModel):
     )
 
 
-class PipelinesIngestionDefinitionObjectsSchema(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesIngestionDefinitionObjectsSchema(BrickflowBundleModel):
     destination_catalog: Optional[str] = Field(
         None, description="Required. Destination catalog to store tables."
     )
@@ -3596,11 +3080,7 @@ class PipelinesIngestionDefinitionObjectsSchema(BaseModel):
     ] = None
 
 
-class PipelinesIngestionDefinitionObjectsTableTableConfiguration(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesIngestionDefinitionObjectsTableTableConfiguration(BrickflowBundleModel):
     primary_keys: Optional[List[str]] = Field(
         None, description="The primary key of the table used to apply changes."
     )
@@ -3620,11 +3100,7 @@ class PipelinesIngestionDefinitionObjectsTableTableConfiguration(BaseModel):
     )
 
 
-class PipelinesIngestionDefinitionObjectsTable(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesIngestionDefinitionObjectsTable(BrickflowBundleModel):
     destination_catalog: Optional[str] = Field(
         None, description="Required. Destination catalog to store table."
     )
@@ -3651,22 +3127,14 @@ class PipelinesIngestionDefinitionObjectsTable(BaseModel):
     ] = None
 
 
-class PipelinesIngestionDefinitionObjects(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesIngestionDefinitionObjects(BrickflowBundleModel):
     schema_: Optional[PipelinesIngestionDefinitionObjectsSchema] = Field(
         None, alias="schema"
     )
     table: Optional[PipelinesIngestionDefinitionObjectsTable] = None
 
 
-class PipelinesIngestionDefinitionTableConfiguration(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesIngestionDefinitionTableConfiguration(BrickflowBundleModel):
     primary_keys: Optional[List[str]] = Field(
         None, description="The primary key of the table used to apply changes."
     )
@@ -3686,11 +3154,7 @@ class PipelinesIngestionDefinitionTableConfiguration(BaseModel):
     )
 
 
-class PipelinesIngestionDefinition(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesIngestionDefinition(BrickflowBundleModel):
     connection_name: Optional[str] = Field(
         None,
         description="Immutable. The Unity Catalog connection this ingestion pipeline uses to communicate with the source. Specify either ingestion_gateway_id or connection_name.",
@@ -3706,19 +3170,11 @@ class PipelinesIngestionDefinition(BaseModel):
     table_configuration: Optional[PipelinesIngestionDefinitionTableConfiguration] = None
 
 
-class PipelinesLibrariesFile(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesLibrariesFile(BrickflowBundleModel):
     path: Optional[str] = Field(None, description="The absolute path of the file.")
 
 
-class PipelinesLibrariesMaven(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesLibrariesMaven(BrickflowBundleModel):
     coordinates: str = Field(
         ...,
         description='Gradle-style maven coordinates. For example: "org.jsoup:jsoup:1.7.2".',
@@ -3733,19 +3189,11 @@ class PipelinesLibrariesMaven(BaseModel):
     )
 
 
-class PipelinesLibrariesNotebook(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesLibrariesNotebook(BrickflowBundleModel):
     path: Optional[str] = Field(None, description="The absolute path of the notebook.")
 
 
-class PipelinesLibraries(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesLibraries(BrickflowBundleModel):
     file: Optional[PipelinesLibrariesFile] = None
     jar: Optional[str] = Field(
         None,
@@ -3755,11 +3203,7 @@ class PipelinesLibraries(BaseModel):
     notebook: Optional[PipelinesLibrariesNotebook] = None
 
 
-class PipelinesNotifications(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesNotifications(BrickflowBundleModel):
     alerts: Optional[List[str]] = Field(
         None,
         description="A list of alerts that trigger the sending of notifications to the configured\ndestinations. The supported alerts are:\n\n* `on-update-success`: A pipeline update completes successfully.\n* `on-update-failure`: Each time a pipeline update fails.\n* `on-update-fatal-failure`: A pipeline update fails with a non-retryable (fatal) error.\n* `on-flow-failure`: A single data flow fails.\n",
@@ -3770,48 +3214,28 @@ class PipelinesNotifications(BaseModel):
     )
 
 
-class PipelinesPermissions(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesPermissions(BrickflowBundleModel):
     group_name: Optional[str] = None
     level: str
     service_principal_name: Optional[str] = None
     user_name: Optional[str] = None
 
 
-class PipelinesTriggerCron(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesTriggerCron(BrickflowBundleModel):
     quartz_cron_schedule: Optional[str] = None
     timezone_id: Optional[str] = None
 
 
-class PipelinesTriggerManual(BaseModel):
+class PipelinesTriggerManual(BrickflowBundleModel):
     pass
 
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
 
-
-class PipelinesTrigger(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class PipelinesTrigger(BrickflowBundleModel):
     cron: Optional[PipelinesTriggerCron] = None
     manual: Optional[PipelinesTriggerManual] = None
 
 
-class Pipelines(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Pipelines(BrickflowBundleModel):
     catalog: Optional[str] = Field(
         None,
         description="A catalog in Unity Catalog to publish data from this pipeline to. If `target` is specified, tables in this pipeline are published to a `target` schema inside `catalog` (for example, `catalog`.`target`.`table`). If `target` is not specified, no data is published to Unity Catalog.",
@@ -3889,20 +3313,12 @@ class Pipelines(BaseModel):
     trigger: Optional[PipelinesTrigger] = None
 
 
-class RegisteredModelsGrants(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class RegisteredModelsGrants(BrickflowBundleModel):
     principal: str
     privileges: List[str]
 
 
-class RegisteredModels(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class RegisteredModels(BrickflowBundleModel):
     catalog_name: str = Field(
         ...,
         description="The name of the catalog where the schema and the registered model reside",
@@ -3921,11 +3337,7 @@ class RegisteredModels(BaseModel):
     )
 
 
-class Resources(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Resources(BrickflowBundleModel):
     experiments: Optional[Dict[str, Experiments]] = None
     jobs: Optional[Dict[str, Jobs]] = None
     model_serving_endpoints: Optional[Dict[str, ModelServingEndpoints]] = None
@@ -3934,29 +3346,17 @@ class Resources(BaseModel):
     registered_models: Optional[Dict[str, RegisteredModels]] = None
 
 
-class RunAs(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class RunAs(BrickflowBundleModel):
     service_principal_name: Optional[str] = None
     user_name: Optional[str] = None
 
 
-class Sync(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Sync(BrickflowBundleModel):
     exclude: Optional[List[str]] = None
     include: Optional[List[str]] = None
 
 
-class VariablesLookup(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class VariablesLookup(BrickflowBundleModel):
     alert: Optional[str] = None
     cluster: Optional[str] = None
     cluster_policy: Optional[str] = None
@@ -3970,21 +3370,13 @@ class VariablesLookup(BaseModel):
     warehouse: Optional[str] = None
 
 
-class Variables(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Variables(BrickflowBundleModel):
     default: Optional[Union[str, bool, float, int]] = None
     description: Optional[str] = None
     lookup: Optional[VariablesLookup] = None
 
 
-class Workspace(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Workspace(BrickflowBundleModel):
     artifact_path: Optional[str] = None
     auth_type: Optional[str] = None
     azure_client_id: Optional[str] = None
@@ -4009,11 +3401,7 @@ class Workspace(BaseModel):
     state_path: Optional[str] = None
 
 
-class Targets(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class Targets(BrickflowBundleModel):
     artifacts: Optional[Dict[str, Artifacts]] = None
     bundle: Optional[Bundle] = None
     compute_id: Optional[str] = None
@@ -4035,11 +3423,7 @@ class Targets(BaseModel):
     workspace: Optional[Workspace] = None
 
 
-class DatabricksAssetBundles(BaseModel):
-    class Config:
-        extra = "forbid"
-        protected_namespaces = ()
-
+class DatabricksAssetBundles(BrickflowBundleModel):
     artifacts: Optional[Dict[str, Artifacts]] = None
     bundle: Optional[Bundle] = None
     experimental: Optional[Experimental] = None

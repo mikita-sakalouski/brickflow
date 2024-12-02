@@ -318,7 +318,7 @@ class Workflow:
             else:
                 self.graph.add_edge(t.__name__, task_id)
 
-    def _add_task(
+    def _generate_task(
         self,
         f: Callable,
         task_id: str,
@@ -332,7 +332,8 @@ class Workflow:
         task_settings: Optional[TaskSettings] = None,
         ensure_brickflow_plugins: bool = False,
         if_else_outcome: Optional[Dict[Union[str, str], str]] = None,
-    ) -> None:
+        for_each_task: Optional[str] = None,
+    ) -> Task:
         if self.task_exists(task_id):
             raise TaskAlreadyExistsError(
                 f"Task: {task_id} already exists, please rename your function."
@@ -384,7 +385,7 @@ class Workflow:
                 f = run_job_func
         # NOTE: END REMOTE WORKSPACE RUN JOB OVERRIDE
 
-        self.tasks[task_id] = Task(
+        task = Task(
             task_id=task_id,
             task_func=f,
             workflow=self,
@@ -398,13 +399,19 @@ class Workflow:
             custom_execute_callback=custom_execute_callback,
             ensure_brickflow_plugins=ensure_plugins,
             if_else_outcome=if_else_outcome,
+            for_each_task=for_each_task,
         )
 
+        return task
+
+    def _add_task(self, task_id: str, task: Task) -> None:
+        self.tasks[task_id] = task
+
         # attempt to create task object before adding to graph
-        if _depends_on is None:
+        if task.depends_on is None:
             self.graph.add_edge(ROOT_NODE, task_id)
         else:
-            self._add_edge_to_graph(_depends_on, task_id)
+            self._add_edge_to_graph(task.depends_on, task_id)
 
     def dlt_task(
         self,
@@ -537,6 +544,23 @@ class Workflow:
             if_else_outcome=if_else_outcome,
         )
 
+    def for_each_task(
+        self,
+        task_func: Optional[Callable] = None,
+        name: Optional[str] = None,
+        task_settings: Optional[TaskSettings] = None,
+        depends_on: Optional[Union[Callable, str, List[Union[Callable, str]]]] = None,
+        if_else_outcome: Optional[Dict[Union[str, str], str]] = None,
+    ) -> Callable:
+        return self.task(
+            task_func,
+            name,
+            task_type=TaskType.FOR_EACH_TASK,
+            task_settings=task_settings,
+            depends_on=depends_on,
+            if_else_outcome=if_else_outcome,
+        )
+
     def task(
         self,
         task_func: Optional[Callable] = None,
@@ -550,6 +574,7 @@ class Workflow:
         task_settings: Optional[TaskSettings] = None,
         ensure_brickflow_plugins: bool = False,
         if_else_outcome: Optional[Dict[Union[str, str], str]] = None,
+        for_each_task: Optional[str] = None,
     ) -> Callable:
         if len(self.tasks) >= self.max_tasks_in_workflow:
             raise ValueError(
@@ -560,20 +585,22 @@ class Workflow:
 
         def task_wrapper(f: Callable) -> Callable:
             task_id = name or f.__name__
-
-            self._add_task(
+            task = self._generate_task(
                 f,
                 task_id,
                 cluster=cluster,
-                task_type=task_type,
                 libraries=libraries,
+                task_type=task_type,
                 depends_on=depends_on,
                 trigger_rule=trigger_rule,
                 custom_execute_callback=custom_execute_callback,
                 task_settings=task_settings,
                 ensure_brickflow_plugins=ensure_brickflow_plugins,
                 if_else_outcome=if_else_outcome,
+                for_each_task=for_each_task,
             )
+
+            self._add_task(task_id=task_id, task=task)
 
             @functools.wraps(f)
             def func(*args, **kwargs):  # type: ignore

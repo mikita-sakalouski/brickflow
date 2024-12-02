@@ -1,0 +1,454 @@
+resources:
+  jobs:
+    qa_outbound_shipping_data_transport_holder_loaded_global:
+      name: qa_outbound_shipping_data__transport_holder_loaded_global
+      webhook_notifications:
+        on_failure:
+          - id: 10575785-a8f4-46bf-894f-575c3af3bd0c
+      trigger:
+        pause_status: UNPAUSED
+        periodic:
+          interval: 1
+          unit: HOURS
+      tasks:
+        - task_key: raw_thl_global
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: cleansed_thl_global
+          depends_on:
+            - task_key: raw_thl_global
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: curated
+          depends_on:
+            - task_key: cleansed_thl_global
+          for_each_task:
+            inputs: '["curated_goods_holder_header","curated_goods_holder_item","curated_shipment_goods_holder","curated_shipment_transport_holder","curated_shipment_header","curated_shipment_vendor","curated_goods_holder_packing_list","curated_transport_holder","curated_transport_holder_event","curated_shipment_destination_address","curated_shipment_origin_address","curated_transport_holder_seal","curated_shipment_event"]'
+            concurrency: 3
+            task:
+              task_key: curated_iteration
+              spark_python_task:
+                python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+                parameters:
+                  - --tech_solution_id
+                  - 846dbba6d3dc880383a74e429260056f1086ed43
+                  - --project
+                  - transport_holder_loaded_global
+                  - --environment
+                  - qa
+                  - --task
+                  - "{{input}}"
+                  - --run_id
+                  - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+                  - --job-metadata
+                  - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                    "job_run_id": "{{task.run_id}}", "workflow_name":
+                    "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                    "pyproject_version": "0.0.1"}'
+                  - --logging_level
+                  - "{{job.parameters.[jp_logging_level]}}"
+                source: GIT
+              job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+              libraries:
+                - pypi:
+                    package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_carton_fact
+          depends_on:
+            - task_key: curated
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_carton_fact_sf_sync
+          depends_on:
+            - task_key: integrated_ship_carton_fact
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_cmr_fact
+          depends_on:
+            - task_key: curated
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_cmr_fact_sf_sync
+          depends_on:
+            - task_key: integrated_ship_cmr_fact
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_item_fact
+          depends_on:
+            - task_key: curated
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_item_fact_sf_sync
+          depends_on:
+            - task_key: integrated_ship_item_fact
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_packlist_fact
+          depends_on:
+            - task_key: curated
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_packlist_fact_sf_sync
+          depends_on:
+            - task_key: integrated_ship_packlist_fact
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_trailer_fact
+          depends_on:
+            - task_key: curated
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+        - task_key: integrated_ship_trailer_fact_sf_sync
+          depends_on:
+            - task_key: integrated_ship_trailer_fact
+          spark_python_task:
+            python_file: ./products/outbound_shipping_data/spark/python/src/run_task.py
+            parameters:
+              - --tech_solution_id
+              - 846dbba6d3dc880383a74e429260056f1086ed43
+              - --project
+              - transport_holder_loaded_global
+              - --environment
+              - qa
+              - --task
+              - "{{task.name}}"
+              - --run_id
+              - "{{job.id}}-{{job.run_id}}-{{task.name}}-{{task.run_id}}"
+              - --job-metadata
+              - '{"job_id": "{{job.id}}", "run_id": "{{job.run_id}}",
+                "job_run_id": "{{task.run_id}}", "workflow_name":
+                "{{job.name}}", "framework_version": "koheesio-0.9.0rc3",
+                "pyproject_version": "0.0.1"}'
+              - --logging_level
+              - "{{job.parameters.[jp_logging_level]}}"
+            source: GIT
+          job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          libraries:
+            - pypi:
+                package: startrack-starship[cerberus]==0.0.39
+      job_clusters:
+        - job_cluster_key: job_cluster_transport_holder_loaded_global_qa
+          new_cluster:
+            cluster_name: ""
+            spark_version: 15.4.x-scala2.12
+            spark_conf:
+              spark.executor.heartbeatInterval: "20"
+            aws_attributes:
+              first_on_demand: 1
+              availability: SPOT_WITH_FALLBACK
+              zone_id: auto
+              instance_profile_arn: arn:aws:iam::572801069962:instance-profile/sole/group/startrack
+              spot_bid_price_percent: 100
+              ebs_volume_type: GENERAL_PURPOSE_SSD
+              ebs_volume_count: 1
+              ebs_volume_size: 100
+            node_type_id: r7gd.xlarge
+            driver_node_type_id: m7g.xlarge
+            custom_tags:
+              template-version: 1.2.0-epic-dunk
+              nike-distributionlist: Lst-App.gap-gpaas-ae.Admins@Nike.com
+              nike-org-geo: na
+              brickflow_version: 1.2.1
+              nike-environment: qa
+              nike-owner: Mark.Devine@nike.com
+              nike-product-name: outbound_shipping_data
+              nike-techsolution: 846dbba6d3dc880383a74e429260056f1086ed43
+              nike-org: EDAI
+              nike-squad: startrack
+              nike-initiative: outbound_shipping_data
+              nike-domain: technical platforms
+              workspace: nike-sole-emea.cloud.databricks.com
+              nike-application: startrack
+              nike-product-type: data-product
+              deployed_at: "1732285092422"
+              release-tag: 0.54.0-outbound-shipping-data
+              deployed_by: b8c7dfce_bd46_4e35_b54c_a141aaca9383
+              nike-template-version: 1.2.0-epic-dunk
+              nike-department: platform eng - analytics platform
+            cluster_log_conf:
+              s3:
+                destination: s3://logs-sole-emea-572801069962/startrack
+                region: eu-west-1
+            spark_env_vars:
+              KOHEESIO__PRINT_LOGO: "False"
+            enable_elastic_disk: true
+            policy_id: 00027BF4789F70F0
+            data_security_mode: USER_ISOLATION
+            runtime_engine: STANDARD
+            autoscale:
+              min_workers: 1
+              max_workers: 3
+      git_source:
+        git_url: https://github.com/nike-eda-emea-startrack/sole-emea-outbound.git
+        git_provider: github
+        git_branch: hotfix/ODS-2569_fix_secrets
+      tags:
+        brickflow_version: 1.2.1
+        deployed_at: "1732285092423"
+        deployed_by: b8c7dfce_bd46_4e35_b54c_a141aaca9383
+        nike-environment: qa
+        nike-initiative: outbound_shipping_data
+        nike-product-name: outbound_shipping_data
+        nike-product-type: data-product
+        nike-squad: startrack
+        nike-techsolution: 846dbba6d3dc880383a74e429260056f1086ed43
+        nike-template-version: 1.2.0-epic-dunk
+        release-tag: 0.54.0-outbound-shipping-data
+        template-version: 1.2.0-epic-dunk
+      parameters:
+        - name: jp_logging_level
+          default: INFO
+        - name: environment
+          default: qa

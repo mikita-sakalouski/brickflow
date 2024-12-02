@@ -1,8 +1,22 @@
-from typing import Dict, List, Optional
+import json
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
-from brickflow import JarTaskLibrary, PypiTaskLibrary
+from brickflow import (
+    BrickflowTriggerRule,
+    DLTPipeline,
+    IfElseConditionTask,
+    JarTaskLibrary,
+    NotebookTask,
+    PypiTaskLibrary,
+    RunJobTask,
+    SparkJarTask,
+    TaskResponse,
+    TaskRunCondition,
+    TaskSettings,
+    TaskType,
+)
 from brickflow.bundles.model import (
     JobsContinuous,
     JobsParameters,
@@ -14,18 +28,9 @@ from brickflow.bundles.model import (
 )
 from brickflow.engine.compute import Cluster
 from brickflow.engine.task import (
-    BrickflowTriggerRule,
-    DLTPipeline,
-    IfElseConditionTask,
-    NotebookTask,
-    RunJobTask,
-    SparkJarTask,
+    ForEachTask,
     SparkPythonTask,
     SqlTask,
-    TaskResponse,
-    TaskRunCondition,
-    TaskSettings,
-    TaskType,
 )
 from brickflow.engine.workflow import User, Workflow, WorkflowPermissions
 
@@ -123,7 +128,7 @@ def run_job_task_b():
 
 
 @wf.sql_task
-def sample_sql_task_query() -> any:
+def sample_sql_task_query() -> Any:
     return SqlTask(
         query_id="your_sql_query_id",
         warehouse_id="your_warehouse_id",
@@ -131,7 +136,7 @@ def sample_sql_task_query() -> any:
 
 
 @wf.sql_task
-def sample_sql_task_file() -> any:
+def sample_sql_task_file() -> Any:
     return SqlTask(
         file_path="products/brickflow_test/src/sql/sql_task_file_test.sql",
         warehouse_id="your_warehouse_id",
@@ -139,7 +144,7 @@ def sample_sql_task_file() -> any:
 
 
 @wf.sql_task(depends_on=notebook_task_a)
-def sample_sql_alert() -> any:
+def sample_sql_alert() -> Any:
     # we need to create kind of dict format for subscriptions to accept usenames and one destination_id..
     # we can either send username or destination_id (not both)
     # it automatically validates user emails
@@ -152,7 +157,7 @@ def sample_sql_alert() -> any:
 
 
 @wf.sql_task
-def sample_sql_dashboard() -> any:
+def sample_sql_dashboard() -> Any:
     return SqlTask(
         dashboard_id="Your_Dashboard_ID",
         dashboard_custom_subject="Raju Legacy Dashboard Test",
@@ -166,7 +171,7 @@ def sample_sql_dashboard() -> any:
 
 
 @wf.if_else_condition_task(depends_on=[sample_sql_task_query])
-def condtion_task_test() -> any:
+def condtion_task_test() -> Any:
     return IfElseConditionTask(
         left="1",
         op="==",
@@ -175,12 +180,26 @@ def condtion_task_test() -> any:
 
 
 @wf.if_else_condition_task(depends_on=[sample_sql_task_query])
-def condition_task_test2() -> any:
+def condition_task_test2() -> Any:
     return IfElseConditionTask(
         left="1",
         op="==",
         right="1",
     )
+
+
+@wf.task(task_type=TaskType.SPARK_PYTHON_TASK, for_each_task="sample_for_each_task")
+def inner_function():
+    return SparkPythonTask(
+        python_file="./products/test-project/spark/python/src/run_task.py",
+        source="GIT",
+        parameters=["--param1", "World!"],
+    )
+
+
+@wf.for_each_task(depends_on=sample_sql_task_query)
+def sample_for_each_task():
+    return ForEachTask(inputs=json.dumps(["a", "b"]))
 
 
 @wf.spark_python_task(

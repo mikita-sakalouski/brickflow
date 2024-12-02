@@ -33,7 +33,9 @@ from brickflow.engine.task import NotebookTask
 
 # `get_job_id` is being called during workflow init, hence the patch
 with patch("brickflow.engine.task.get_job_id", return_value=12345678901234.0) as p:
-    from tests.codegen.sample_workflows import wf, wf2, wf_bad_tasks
+    from tests.codegen.sample_workflows import wf
+    from tests.codegen.sample_workflows import wf as wf2
+    from tests.codegen.sample_workflows import wf as wf_bad_tasks
 
 # BUNDLE_FILE_NAME = str(Path(__file__).parent / f"bundle.yml")
 BUNDLE_FILE_NAME = "bundle.yml"
@@ -129,6 +131,10 @@ class TestBundleCodegen(TestCase):
         actual = read_yaml_file(BUNDLE_FILE_NAME)
         expected = get_expected_bundle_yaml("local_bundle.yml")
         bf_version_mock.assert_called_once()
+        with open("tests/codegen/actual.yaml", "w") as f:
+            yaml.dump(actual, f)
+        with open("tests/codegen/expected.yaml", "w") as f:
+            yaml.dump(expected, f)
         assert_equal_dicts(actual, expected)
         if os.path.exists(BUNDLE_FILE_NAME):
             os.remove(BUNDLE_FILE_NAME)

@@ -28,6 +28,7 @@ from typing import (
 
 import pluggy
 from decouple import config
+from pydantic import field_validator
 
 from brickflow import (
     BrickflowDefaultEnvs,
@@ -38,6 +39,7 @@ from brickflow import (
 )
 from brickflow.bundles.model import (
     JobsTasksConditionTask,
+    JobsTasksForEachTask,
     JobsTasksHealthRules,
     JobsTasksNotebookTask,
     JobsTasksNotificationSettings,
@@ -123,6 +125,7 @@ class TaskType(Enum):
     SPARK_PYTHON_TASK = "spark_python_task"
     RUN_JOB_TASK = "run_job_task"
     IF_ELSE_CONDITION_TASK = "condition_task"
+    FOR_EACH_TASK = "for_each_task"
 
 
 class TaskRunCondition(Enum):
@@ -262,6 +265,20 @@ class CranTaskLibrary(TaskLibrary):
 
 @dataclass(frozen=True)
 class EmailNotifications:
+    on_failure: Optional[List[str]] = None
+    on_success: Optional[List[str]] = None
+    on_start: Optional[List[str]] = None
+
+    def to_tf_dict(self) -> Dict[str, Optional[List[str]]]:
+        return {
+            "on_start": self.on_start,
+            "on_failure": self.on_failure,
+            "on_success": self.on_success,
+        }
+
+
+@dataclass(frozen=True)
+class ForEachInnerTask:
     on_failure: Optional[List[str]] = None
     on_success: Optional[List[str]] = None
     on_start: Optional[List[str]] = None
@@ -679,6 +696,15 @@ class IfElseConditionTask(JobsTasksConditionTask):
         self.op = str(Operator(self.op).name)
 
 
+class ForEachTask(JobsTasksForEachTask):
+    @field_validator("inputs", mode="after")
+    @classmethod
+    def validate_inputs(cls, inputs):
+        if not isinstance(inputs, str):
+            inputs = json.dumps(inputs)
+        return inputs
+
+
 class DefaultBrickflowTaskPluginImpl(BrickflowTaskPluginSpec):
     @staticmethod
     @brickflow_task_plugin_impl
@@ -807,6 +833,7 @@ class Task:
     ensure_brickflow_plugins: bool = False
     health: Optional[List[JobsTasksHealthRules]] = None
     if_else_outcome: Optional[Dict[Union[str, str], str]] = None
+    for_each_task: Optional[str] = None
 
     def __post_init__(self) -> None:
         self.is_valid_task_signature()

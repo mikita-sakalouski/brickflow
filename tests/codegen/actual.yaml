@@ -17,6 +17,9 @@
           "max_concurrent_runs": 1.0
           "name": "test_user_test"
           "notification_settings": null
+          "parameters":
+          - "default": "value1"
+            "name": "wf_param1"
           "permissions":
           - "level": "IS_OWNER"
             "user_name": "abc@abc.com"
@@ -36,27 +39,13 @@
             "brickflow_deployment_mode": "Databricks Asset Bundles"
             "brickflow_project_name": "test-project"
             "brickflow_version": "1.0.0"
-            "deployed_by": "test_user"
             "deployed_at": "1704067200000"
+            "deployed_by": "test_user"
             "environment": "local"
             "tag1": "value1"
             "tag2": "value2"
             "test": "test2"
-          "parameters": [{"name": "wf_param1", "default": "value1"}]
           "tasks":
-          - "condition_task":
-              "left": "1"
-              "op": "EQUAL_TO"
-              "right": "2"
-            "depends_on":
-            - "outcome": null
-              "task_key": "sample_sql_task_query"
-            "email_notifications": {}
-            "max_retries": null
-            "min_retry_interval_millis": null
-            "retry_on_timeout": null
-            "task_key": "condtion_task_test"
-            "timeout_seconds": null
           - "condition_task":
               "left": "1"
               "op": "EQUAL_TO"
@@ -69,6 +58,19 @@
             "min_retry_interval_millis": null
             "retry_on_timeout": null
             "task_key": "condition_task_test2"
+            "timeout_seconds": null
+          - "condition_task":
+              "left": "1"
+              "op": "EQUAL_TO"
+              "right": "2"
+            "depends_on":
+            - "outcome": null
+              "task_key": "sample_sql_task_query"
+            "email_notifications": {}
+            "max_retries": null
+            "min_retry_interval_millis": null
+            "retry_on_timeout": null
+            "task_key": "condtion_task_test"
             "timeout_seconds": null
           - "depends_on": []
             "email_notifications": {}
@@ -172,6 +174,36 @@
             "timeout_seconds": null
           - "depends_on":
             - "outcome": null
+              "task_key": "sample_sql_task_query"
+            "email_notifications": {}
+            "for_each_task":
+              "inputs": "[\"a\", \"b\"]"
+              "task":
+                "email_notifications":
+                  "no_alert_for_skipped_runs": null
+                  "on_duration_warning_threshold_exceeded": null
+                  "on_failure": null
+                  "on_start": null
+                  "on_success": null
+                "existing_cluster_id": "existing_cluster_id"
+                "spark_python_task":
+                  "parameters":
+                  - "--param1"
+                  - "World!"
+                  - "all_tasks1"
+                  - "test"
+                  - "all_tasks3"
+                  - "123"
+                  "python_file": "/Workspace/Users/${workspace.current_user.userName}/.brickflow_bundles/test-project/local/files/spark/python/src/run_task.py"
+                  "source": "WORKSPACE"
+                "task_key": "inner_function"
+            "max_retries": null
+            "min_retry_interval_millis": null
+            "retry_on_timeout": null
+            "task_key": "sample_for_each_task"
+            "timeout_seconds": null
+          - "depends_on":
+            - "outcome": null
               "task_key": "notebook_task_a"
             "email_notifications": {}
             "max_retries": null
@@ -254,6 +286,7 @@
                 "repo": null
             "max_retries": null
             "min_retry_interval_millis": null
+            "parent_for_each_task": null
             "retry_on_timeout": null
             "spark_python_task":
               "parameters":
@@ -280,6 +313,7 @@
                 "repo": null
             "max_retries": null
             "min_retry_interval_millis": null
+            "parent_for_each_task": null
             "retry_on_timeout": null
             "spark_python_task":
               "parameters":
@@ -306,6 +340,7 @@
                 "repo": null
             "max_retries": null
             "min_retry_interval_millis": null
+            "parent_for_each_task": null
             "retry_on_timeout": null
             "spark_python_task":
               "parameters":
@@ -348,36 +383,6 @@
               "source": "WORKSPACE"
             "retry_on_timeout": null
             "task_key": "task_function"
-            "timeout_seconds": null
-          - "depends_on":
-            - "outcome": null
-              "task_key": "sample_sql_task_query"
-            "email_notifications": {}
-            "for_each_task":
-              "inputs": "[\"a\", \"b\"]"
-              "task":
-                "email_notifications":
-                  "no_alert_for_skipped_runs": null
-                  "on_duration_warning_threshold_exceeded": null
-                  "on_failure": null
-                  "on_start": null
-                  "on_success": null
-                "existing_cluster_id": "existing_cluster_id"
-                "spark_python_task":
-                  "parameters":
-                  - "--param1"
-                  - "World!"
-                  - "all_tasks1"
-                  - "test"
-                  - "all_tasks3"
-                  - "123"
-                  "python_file": "/Workspace/Users/${workspace.current_user.userName}/.brickflow_bundles/test-project/local/files/spark/python/src/run_task.py"
-                  "source": "WORKSPACE"
-                "task_key": "inner_function"
-            "max_retries": null
-            "min_retry_interval_millis": null
-            "retry_on_timeout": null
-            "task_key": "sample_for_each_task"
             "timeout_seconds": null
           - "depends_on":
             - "outcome": null

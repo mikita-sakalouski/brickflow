@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 from airflow.operators.bash import BashOperator
@@ -6,6 +7,7 @@ from brickflow import (
     BrickflowTriggerRule,
     Cluster,
     EmailNotifications,
+    ForEachTask,
     IfElseConditionTask,
     JarTaskLibrary,
     NotebookTask,
@@ -15,6 +17,7 @@ from brickflow import (
     SparkPythonTask,
     SqlTask,
     TaskSettings,
+    TaskType,
     User,
     Workflow,
     WorkflowPermissions,
@@ -540,6 +543,20 @@ def sample_sql_dashboard() -> any:
 @wf.if_else_condition_task(depends_on=sample_sql_dashboard)
 def sample_condition_task1():
     return IfElseConditionTask(left="1", op="==", right="2")
+
+
+@wf.task(task_type=TaskType.SPARK_PYTHON_TASK, for_each_task="sample_for_each_task")
+def inner_function():
+    return SparkPythonTask(
+        python_file="./products/test-project/spark/python/src/run_task.py",
+        source="GIT",
+        parameters=["--param1", "World!"],
+    )
+
+
+@wf.for_each_task(depends_on=sample_sql_task_query)
+def sample_for_each_task():
+    return ForEachTask(inputs=json.dumps(["a", "b"]))
 
 
 @wf.if_else_condition_task(

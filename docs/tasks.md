@@ -373,7 +373,7 @@ PythonTask class can accept the following as inputs:<br />
 &emsp;<b>python_file</b>:
 The Python file to be executed. Cloud file URIs (such as dbfs:/, s3:/, adls:/, gcs:/) and workspace paths are supported. For python files stored in the Databricks workspace, the path must be absolute and begin with `/`. For files stored in a remote repository, the path must be relative. This field is required.'
 <br />
-&emsp;<b>source</b>: When set to `WORKSPACE` or not specified, the file will be retrieved from the local Databricks workspace or cloud location (if the `python_file` has a URI format). When set to `GIT`,\nthe Python file will be retrieved from a Git repository defined in `git_source`.\n\n* `WORKSPACE`: The Python file is located in a Databricks workspace or at a cloud filesystem URI.\n* `GIT`: The Python file is located in a remote Git repository..<br />
+&emsp;<b>source</b>: When set to `WORKSPACE` or not specified, the file will be retrieved from the local Databricks workspace or cloud location (if the `python_file` has a URI format). When set to `GIT`,\nthe Python file will be retrieved from a Git repository defined in `git_source`.\n\n*`WORKSPACE`: The Python file is located in a Databricks workspace or at a cloud filesystem URI.\n* `GIT`: The Python file is located in a remote Git repository..<br />
 &emsp;<b>parameters [Optional]</b>: Parameters passed to the main method.
 
 #### SQL Task
@@ -501,6 +501,14 @@ def sample_sql_alert() ->any:
     return SqlTask(alert_id="ALERT_ID", pause_subscriptions=False, subscriptions={"usernames":["YOUR_EMAIL", 'YOUR_EMAIL']} ,warehouse_id="WAREHOUSE_ID")
 # Note: Since SQL task doesn't return any bool, we can't make use of if_else_outcome params for the tasks that depends on sql Task
 ```
+
+### For Each Task
+
+Use the For each task to run a task in a loop, passing a different set of parameters to each iteration of the task.
+Adding the For each task to a job requires defining two tasks: The For each task and a nested task. The nested task is the task to run for each iteration of the For each task and is one of the standard Databricks Jobs task types. You cannot add another For each task as the nested task.
+For example, you could use the For each task to perform a common set of transformations on multiple tables, passing a table name from a list of table names to each iteration of the task.
+
+<!-- TODO -->
 
 ### Trigger rules
 
